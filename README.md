@@ -5,7 +5,7 @@
 
 The goal is to help travellers prepare for unexpected situations, stay connected with trusted contacts, and make more informed decisions throughout their journeys.
 
-🌐 **Live Website:** [https://live-website-build.netlify.app/]
+🌐 **Live Website:** https://safeexit-phi.vercel.app/
 
 ---
 
