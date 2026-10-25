@@ -29,10 +29,14 @@ export default async (req: Request, context: Context) => {
       context.cookies.set({name:'safeexit_browser',value:browser,httpOnly:true,secure:url.protocol === 'https:',sameSite:'Strict',path:'/',maxAge:60*60*24*365});
     }
     const ownerId = hash(browser);
-    const db = database();
     const path = url.pathname.replace(/^\/api\//,'');
+    if (path === 'workspace' && req.method === 'GET') return reply({ready:true});
+    const db = database();
     if (Number(req.headers.get('content-length') || 0) > 16000) return reply({error:'Request too large.'},413);
-    const body = req.method === 'POST' ? await req.json() : {};
+    const raw = req.method === 'POST' ? await req.text() : '';
+    if (raw.length > 16000) return reply({error:'Request too large.'},413);
+    const body = raw ? JSON.parse(raw) : {};
+    if (!body || typeof body !== 'object' || Array.isArray(body)) fail('Please send a valid request.');
 
     if (path === 'trips') {
       if (req.method === 'GET') {
@@ -54,6 +58,7 @@ export default async (req: Request, context: Context) => {
       return reply({ok:true});
     }
     if (path !== 'safety') return reply({error:'Not found.'},404);
+    if (req.method === 'DELETE') return reply({error:'Method not allowed.'},405);
     const now = new Date();
     await db.delete(sessions).where(lte(sessions.expiresAt,now));
     const token = req.headers.get('X-SafeExit-Link');
@@ -71,7 +76,11 @@ export default async (req: Request, context: Context) => {
       [session] = await db.insert(sessions).values({id:randomUUID(),ownerId,label,shareHash:hash(shareToken),expiresAt:new Date(Date.now()+body.duration*60000)}).returning();
       return reply({shareToken},201);
     }
-    if (!session) return token ? reply({error:'This sharing link has expired or was revoked.'},404) : reply({session:null});
+    if (!session) {
+      if (token) fail('This sharing link has expired or was revoked.',404);
+      if (req.method === 'POST') fail('This safety session has ended. Start a new session before sending updates.',409);
+      return reply({session:null});
+    }
     if (req.method === 'POST') {
       const ownerActions = ['location','arm','checkin','sos','rotate','end'];
       if (token && ownerActions.includes(action)) fail('Only the traveller can perform this action.',403);
@@ -88,6 +97,7 @@ export default async (req: Request, context: Context) => {
         await db.update(sessions).set({latitude,longitude,accuracy,locationAt:now}).where(eq(sessions.id,session.id));
       } else if (action === 'arm') {
         if (![5,15,30,60].includes(body.minutes)) fail('Choose a valid deadline.');
+        if (Date.now()+body.minutes*60000 > session.expiresAt.getTime()) fail('Choose a deadline before this sharing link expires, or start a longer session.');
         await db.update(sessions).set({deadline:new Date(Date.now()+body.minutes*60000)}).where(eq(sessions.id,session.id));
       } else if (action === 'checkin') {
         await db.update(sessions).set({deadline:null}).where(eq(sessions.id,session.id));

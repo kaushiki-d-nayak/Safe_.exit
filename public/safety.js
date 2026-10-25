@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const token = new URLSearchParams(location.hash.slice(1)).get('contact');
   let session = null, role = token ? 'contact' : 'owner', shareToken = null;
-  let watch = null, polling = false, posting = false, mapVisible = false, lastLocationSent = 0;
+  let watch = null, polling = null, posting = false, mapVisible = false, lastLocationSent = 0;
   let knownAlerts = new Set(), firstSync = true, confirmAction = null;
   const time = value => value ? new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'}) : 'Not set';
   function show(id, visible) { $(id).classList.toggle('hidden',!visible); }
@@ -12,14 +12,11 @@
     $('liveFeedback').className = 'live-banner' + (error ? ' error' : '');
   }
   async function api(body) {
-    const response = await fetch('/api/safety', {
+    return window.safeExitRequest('safety', {
       method:body ? 'POST' : 'GET', credentials:'same-origin', cache:'no-store',
       headers:{...(body ? {'Content-Type':'application/json'} : {}), ...(token ? {'X-SafeExit-Link':token} : {})},
       ...(body ? {body:JSON.stringify(body)} : {}),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Unable to connect. Please retry.');
-    return data;
   }
   function stopTracking() {
     if (watch !== null) navigator.geolocation.clearWatch(watch);
@@ -30,6 +27,7 @@
   }
   async function enableLocation() {
     if (!navigator.geolocation) { feedback('Location is not supported by this browser. Check-in and SOS remain available.',true); return; }
+    if (!window.isSecureContext) { feedback('Location sharing requires HTTPS. Open the secure website address.',true); return; }
     if (watch !== null) return;
     $('liveResume').disabled = true;
     $('livePause').disabled = false;
@@ -42,7 +40,7 @@
         await api({action:'location',latitude,longitude,accuracy});
         $('liveTrackingState').textContent = 'Location is updating while this page is active.';
         await sync();
-      } catch (error) { feedback(error.message,true); }
+      } catch (error) { lastLocationSent = 0; $('liveTrackingState').textContent = 'Location update failed. Keep this page open to retry.'; feedback(error.message,true); }
     }, error => {
       stopTracking();
       feedback(error.code === 1 ? 'Location permission was declined. You can still set check-ins and send SOS. Enable permission in your browser to share location.' : 'Location is currently unavailable. Try again from an open area.',true);
@@ -113,12 +111,16 @@
     updateLink();
   }
   async function sync() {
-    if (polling) return;
-    polling = true;
+    if (polling) return polling;
+    polling = (async () => {
     try {
       render(await api());
       show('liveNetwork',false);
     } catch (error) {
+      if (error.status === 404) {
+        session = null; stopTracking();
+        show('liveDashboard',false); show('liveMapWrap',false);
+      }
       show('liveLoading',false);
       $('liveNetwork').textContent = error.message+' Saved details may be out of date.';
       show('liveNetwork',true);
@@ -127,15 +129,19 @@
         $('liveUnavailableText').textContent = error.message;
         $('liveUnavailableTitle').textContent = role === 'contact' ? 'This sharing link is unavailable' : 'Unable to load safety sessions';
       }
-    } finally { polling = false; }
+    } finally { polling = null; }
+    })();
+    return polling;
   }
   async function act(body, message) {
     if (posting) return;
     posting = true;
     try {
+      if (polling) await polling;
       const result = await api(body);
       if (result.shareToken) { shareToken = result.shareToken; updateLink(); }
       if (body.action === 'end') { stopTracking(); mapVisible = false; show('liveMapWrap',false); }
+      if (polling) await polling;
       await sync();
       feedback(message || 'Saved.');
     } catch (error) { feedback(error.message,true); }

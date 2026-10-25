@@ -17,3 +17,22 @@
   for = "/api/*"
   [headers.values]
     Cache-Control = "no-store"
+
+[[headers]]
+  for = "/downloads/app.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Content-Disposition = 'attachment; filename="app.js"'
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/safeexit-complete-source.zip"
+  [headers.values]
+    Content-Type = "application/zip"
+    Content-Disposition = 'attachment; filename="safeexit-complete-source.zip"'
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/download.html"
+  [headers.values]
+    Cache-Control = "no-store"

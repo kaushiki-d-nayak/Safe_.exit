@@ -31,12 +31,9 @@
   }
 
   async function request(path, options = {}) {
-    const response = await fetch('/api/' + path, {
-      ...options, headers: {'Content-Type': 'application/json'}, credentials: 'same-origin'
+    return window.safeExitRequest(path, {
+      ...options, headers: {'Content-Type': 'application/json'}
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Unable to save. Try again.');
-    return data;
   }
 
   async function loadTrips() {

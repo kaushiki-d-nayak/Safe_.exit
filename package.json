@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "netlify dev --port 8889",
-    "db:generate": "drizzle-kit generate",
-    "source": "python3 scripts/package-source.py"
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@netlify/database": "^2.0.1",

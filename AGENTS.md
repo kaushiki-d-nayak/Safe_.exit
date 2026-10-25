@@ -13,7 +13,7 @@ The project is a static website with serverless API functions, intentionally pre
 - `netlify/functions/cleanup.mts`: hourly removal of expired sessions on published deployments.
 - `db/schema.ts`: source of truth for Postgres tables; `db/index.ts` creates the Drizzle client.
 - `netlify/database/migrations/`: generated migrations applied by the platform.
-- `scripts/package-source.py`: creates the downloadable full source archive.
+- `public/api.js`: shared request client; establishes the anonymous workspace before parallel API calls.
 
 ## Conventions
 
@@ -23,4 +23,4 @@ Database calls happen inside function invocations. APIs return no-store response
 
 Keep emergency and notification claims accurate: alerts are seen through an open, polling dashboard. There are no SMS/email integrations or background mobile tracking. Read-only checks must not be described as sender verification. Pending/expired/disconnected UI must never imply that an old location proves safety.
 
-Use `npm run dev` for local development on port 8889. The managed creation environment delegates validation to the deployment pipeline; do not run builds, tests or development servers there. Read edited files to review changes. Run `npm run source` after source changes so the ZIP matches the current code. The archive must never contain dependencies, environment files, local platform metadata or credentials.
+Use `npm run dev` for local development on port 8889. The managed creation environment delegates validation to the deployment pipeline; do not run builds, tests or development servers there. Read edited files to review changes. Do not add public source archives or code download controls.

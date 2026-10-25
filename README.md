@@ -1,6 +1,6 @@
 # SafeExit
 
-A responsive travel safety website resembling the requested reference at https://kaushiki-d-nayak.github.io/safe_exit/. The supplied public HTML, CSS and planning interactions were adapted, and the missing live safety feature was implemented with a persistent backend.
+SafeExit is a responsive travel safety website with private trips, live location sharing, check-in deadlines, and practical backup plans. Its frontend and backend deploy together on Netlify.
 
 ## Features
 
@@ -10,7 +10,6 @@ A responsive travel safety website resembling the requested reference at https:/
 - Discreet help phrases, next steps and personalised meeting-point details.
 - Consent-based live location sharing with expiring private contact links, link replacement, check-in deadlines, SOS, acknowledgements, resolved alerts and optional browser notifications.
 - Optional OpenStreetMap view and emergency telephone links.
-- Full source download in the website header and footer.
 
 ## Technologies
 
@@ -37,9 +36,13 @@ Location requires HTTPS (or localhost), permission and an active page. Browser/p
 
 Message checks, Plan B output and help phrases are processed in the browser and are not persisted. Trips are saved on the server; sensitive passwords, payment credentials or passport numbers should not be entered.
 
-## Source archive
+## Hosting
 
-Download `/safeexit-codebase.zip` from the running site. Regenerate it after changes with `npm run source` (Python 3 required). It includes the frontend, server functions, schema, migrations, lockfile, documentation and packaging script, excluding dependencies, local Netlify state, credentials and the ZIP itself.
+Deploy this repository as a Netlify project with `public` as the publish directory. The included `netlify.toml` configures the TypeScript API functions. The initial migration creates all trip, session and alert tables automatically during deployment. No build command is needed. A static-only host or an unmodified Vercel deployment does not execute these Netlify Functions.
+
+The shared API client establishes the browser workspace before loading trips and safety, preventing competing first-load cookies. Failed requests show retryable errors, including when the backend returns a non-JSON response. Safety mutations refresh the dashboard after any in-flight poll completes.
+
+The website has no source download link or public source archive. The repository contains the complete editable frontend and backend.
 
 ## Verification
 

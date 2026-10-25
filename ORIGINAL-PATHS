@@ -1,0 +1,23 @@
+Text copy -> original project path
+.gitignore.txt -> .gitignore
+AGENTS.md.txt -> AGENTS.md
+README.md.txt -> README.md
+db/index.ts.txt -> db/index.ts
+db/schema.ts.txt -> db/schema.ts
+drizzle.config.ts.txt -> drizzle.config.ts
+netlify.toml.txt -> netlify.toml
+netlify/database/migrations/20261025152939_create_safeexit_tables/migration.sql.txt -> netlify/database/migrations/20261025152939_create_safeexit_tables/migration.sql
+netlify/database/migrations/20261025152939_create_safeexit_tables/snapshot.json.txt -> netlify/database/migrations/20261025152939_create_safeexit_tables/snapshot.json
+netlify/functions/api.mts.txt -> netlify/functions/api.mts
+netlify/functions/cleanup.mts.txt -> netlify/functions/cleanup.mts
+package-lock.json.txt -> package-lock.json
+package.json.txt -> package.json
+public/api.js.txt -> public/api.js
+public/app.js.txt -> public/app.js
+public/favicon.svg.txt -> public/favicon.svg
+public/index.html.txt -> public/index.html
+public/safety.css.txt -> public/safety.css
+public/safety.js.txt -> public/safety.js
+public/styles.css.txt -> public/styles.css
+public/trips.css.txt -> public/trips.css
+public/trips.js.txt -> public/trips.js
